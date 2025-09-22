@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Preferences</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Privacy Preferences</h1>
+
+        <div class="preference-item">
+            <div>
+                <div class="preference-label">Analytics Collection</div>
+                <div style="font-size: 12px; color: #666;">Allow collection of usage analytics</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="analytics" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div>
+                <div class="preference-label">Data Sharing</div>
+                <div style="font-size: 12px; color: #666;">Share data with third parties</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="dataSharing">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div>
+                <div class="preference-label">Marketing Communications</div>
+                <div style="font-size: 12px; color: #666;">Receive marketing emails and notifications</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="marketing">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="preference-item">
+            <div>
+                <div class="preference-label">Surveillance Feed Access</div>
+                <div style="font-size: 12px; color: #666;">Allow access to surveillance feeds</div>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" id="surveillanceAccess" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <button class="save-btn" onclick="savePreferences()">Save Preferences</button>
+
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        // Load preferences on page load
+        window.onload = function () {
+            loadPreferences();
+        };
+
+        function loadPreferences() {
+            fetch('/api/preferences')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('analytics').checked = data.preferences.analytics;
+                        document.getElementById('dataSharing').checked = data.preferences.dataSharing;
+                        document.getElementById('marketing').checked = data.preferences.marketing;
+                        document.getElementById('surveillanceAccess').checked = data.preferences.surveillanceAccess;
+                    }
+                })
+                .catch(error => {
+                    console.log('Using default preferences');
+                });
+        }
+
+        function savePreferences() {
+            const preferences = {
+                analytics: document.getElementById('analytics').checked,
+                dataSharing: document.getElementById('dataSharing').checked,
+                marketing: document.getElementById('marketing').checked,
+                surveillanceAccess: document.getElementById('surveillanceAccess').checked
+            };
+
+            fetch('/api/preferences', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(preferences)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const statusDiv = document.getElementById('status');
+                    if (data.success) {
+                        statusDiv.className = 'status success';
+                        statusDiv.textContent = 'Preferences saved successfully!';
+                    } else {
+                        statusDiv.className = 'status error';
+                        statusDiv.textContent = 'Error saving preferences. Please try again.';
+                    }
+                    statusDiv.style.display = 'block';
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                })
+                .catch(error => {
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'Error saving preferences. Please try again.';
+                    statusDiv.style.display = 'block';
+                    setTimeout(() => {
+                        statusDiv.style.display = 'none';
+                    }, 3000);
+                });
+        }
+    </script>
+</body>
+
+</html>
